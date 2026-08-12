@@ -119,22 +119,39 @@ export async function verifyPassword(inputPassword, storedPassword) {
 
     if (storedPassword.startsWith(HASH_PREFIX_PBKDF2)) {
         // PBKDF2 哈希格式：$pbkdf2$salt$hash
-        const parts = storedPassword.split('$');
-        // ['', 'pbkdf2', salt, hash]
-        if (parts.length !== 4) {
+        // 使用 substring 和 lastIndexOf 而不是 split，以避免 hash 中可能包含 $ 的问题
+        const prefixLen = HASH_PREFIX_PBKDF2.length;
+        const lastDollarIndex = storedPassword.lastIndexOf('$');
+        
+        if (lastDollarIndex <= prefixLen) {
             return false;
         }
-        const salt = parts[2];
+        
+        const salt = storedPassword.substring(prefixLen, lastDollarIndex);
+        
+        // 验证 salt 是有效的十六进制字符串
+        if (!/^[0-9a-f]{32}$/i.test(salt)) {
+            return false;
+        }
+        
         const expectedHash = await hashPassword(inputPassword, salt);
         return timingSafeEqual(expectedHash, storedPassword);
     } else if (storedPassword.startsWith(HASH_PREFIX_SHA256)) {
         // 旧版 SHA-256 哈希格式：$sha256$salt$hash
-        const parts = storedPassword.split('$');
-        // ['', 'sha256', salt, hash]
-        if (parts.length !== 4) {
+        const prefixLen = HASH_PREFIX_SHA256.length;
+        const lastDollarIndex = storedPassword.lastIndexOf('$');
+        
+        if (lastDollarIndex <= prefixLen) {
             return false;
         }
-        const salt = parts[2];
+        
+        const salt = storedPassword.substring(prefixLen, lastDollarIndex);
+        
+        // 验证 salt 是有效的十六进制字符串
+        if (!/^[0-9a-f]{32}$/i.test(salt)) {
+            return false;
+        }
+        
         const expectedHash = await hashPasswordSHA256(inputPassword, salt);
         return timingSafeEqual(expectedHash, storedPassword);
     } else {
