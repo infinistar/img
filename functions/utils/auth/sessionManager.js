@@ -28,7 +28,9 @@ export async function createSession(env, authType, username = '') {
     // 读取安全策略配置
     const securityConfig = await fetchSecurityConfig(env);
     const accessConfig = securityConfig.access || {};
-    // 在 Vercel 上自动检测 HTTPS 环境并启用 Secure 标志
+    git add .
+    git commit -m "Add comprehensive session diagnosis endpoints"
+    git push    // 在 Vercel 上自动检测 HTTPS 环境并启用 Secure 标志
     const isVercel = !!env.VERCEL;
     const isHttps = env.PROTOCOL === 'https' || isVercel;
     const secure = (accessConfig.sessionSecure ?? false) || isHttps;
